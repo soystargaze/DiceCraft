@@ -1,4 +1,12 @@
-rootProject.name = "DiceCraft"
+pluginManagement {
+    repositories {
+        maven { url 'https://maven.fabricmc.net/' } // Repositorio de Fabric Loom
+        gradlePluginPortal() // Gradle Plugin Portal
+        mavenCentral()       // Repositorio Maven central
+    }
+}
+
+rootProject.name = 'DiceCraft'
 
 include 'fabric-mod'
 include 'paper-plugin'
