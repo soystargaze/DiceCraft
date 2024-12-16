@@ -37,14 +37,20 @@ public class Dicecraft implements ModInitializer {
     }
 
     public boolean performAttack(PlayerEntity attacker, LivingEntity target) {
-        int attackRoll = rollD20() + getWeaponBonus(attacker.getStackInHand(Hand.MAIN_HAND));
+        int attackRoll = rollD20();
         int targetArmorValue = target.getArmor();
 
         System.out.println("Attack Roll: " + attackRoll);
         System.out.println("Target Armor: " + targetArmorValue);
 
+        if (attackRoll == 1) {
+            System.out.println("Natural 1! Attack automatically misses.");
+            return false; // Falla automática
+        }
+
         if (attackRoll >= targetArmorValue) {
-            performDamageRoll(attacker, target, attacker.getStackInHand(Hand.MAIN_HAND));
+            boolean isCritical = attackRoll == 20;
+            performDamageRoll(attacker, target, attacker.getStackInHand(Hand.MAIN_HAND), isCritical);
             return true; // Hit successful
         } else {
             System.out.println("Attack missed!");
@@ -59,8 +65,14 @@ public class Dicecraft implements ModInitializer {
         System.out.println("Mob Attack Roll: " + attackRoll);
         System.out.println("Player Armor: " + targetArmorValue);
 
+        if (attackRoll == 1) {
+            System.out.println("Natural 1! Mob attack automatically misses.");
+            return false; // Falla automática
+        }
+
         if (attackRoll >= targetArmorValue) {
-            performDamageRoll(attacker, target, attacker.getMainHandStack());
+            boolean isCritical = attackRoll == 20;
+            performDamageRoll(attacker, target, attacker.getMainHandStack(), isCritical);
             return true; // Hit successful
         } else {
             System.out.println("Mob Attack missed!");
@@ -72,24 +84,13 @@ public class Dicecraft implements ModInitializer {
         return Random.create().nextInt(20) + 1;
     }
 
-    private int getWeaponBonus(ItemStack weapon) {
-        if (weapon.isOf(Items.WOODEN_SWORD)) {
-            return 0;
-        } else if (weapon.isOf(Items.STONE_SWORD)) {
-            return 1;
-        } else if (weapon.isOf(Items.IRON_SWORD)) {
-            return 2;
-        } else if (weapon.isOf(Items.DIAMOND_SWORD)) {
-            return 3;
-        } else if (weapon.isOf(Items.NETHERITE_SWORD)) {
-            return 4;
-        } else {
-            return 0; // No bonus for non-sword items
-        }
-    }
-
-    private void performDamageRoll(LivingEntity attacker, LivingEntity target, ItemStack weapon) {
+    private void performDamageRoll(LivingEntity attacker, LivingEntity target, ItemStack weapon, boolean isCritical) {
         int damageRoll = getDamageBasedOnWeapon(weapon);
+
+        if (isCritical) {
+            System.out.println("Natural 20! Critical hit, rolling damage twice.");
+            damageRoll += getDamageBasedOnWeapon(weapon); // Segunda tirada de daño
+        }
 
         System.out.println("Damage Roll: " + damageRoll);
 

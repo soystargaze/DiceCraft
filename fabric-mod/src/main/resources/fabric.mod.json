@@ -13,10 +13,13 @@
   },
   "license": "All-Rights-Reserved",
   "icon": "assets/dicecraft/icon.png",
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "main": [
       "com.erosmari.dicecraft.Dicecraft"
+    ],
+    "client": [
+      "com.erosmari.dicecraft.DicecraftClient"
     ]
   },
   "mixins": [
