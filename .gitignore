@@ -1,0 +1,13 @@
+# Archivos de construcción
+.gradle/
+build/
+fabric-mod/.gradle/
+fabric-mod/build/
+paper-plugin/.gradle/
+paper-plugin/build/
+
+# Archivos de entorno
+/.idea/
+*.iml
+.DS_Store
+*.log

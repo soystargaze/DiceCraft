@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "dicecraft",
+  "version": "${version}",
+  "name": "DiceCraft",
+  "description": "Initial concept of a combat system based on dice rolls as in DND.",
+  "authors": [
+    "Eros Marí"
+  ],
+  "contact": {
+    "homepage": "https://erosmari.com/discord",
+    "sources": "https://github.com/soystargaze/DiceCraft"
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/dicecraft/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "com.erosmari.dicecraft.Dicecraft"
+    ]
+  },
+  "mixins": [
+    "dicecraft.mixins.json",
+    {
+      "config": "dicecraft.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
