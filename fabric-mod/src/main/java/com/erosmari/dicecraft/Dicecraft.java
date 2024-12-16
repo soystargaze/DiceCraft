@@ -89,7 +89,9 @@ public class Dicecraft implements ModInitializer {
 
         if (isCritical) {
             System.out.println("Natural 20! Critical hit, rolling damage twice.");
-            damageRoll += getDamageBasedOnWeapon(weapon); // Segunda tirada de daño
+            int criticalDamage = getDamageBasedOnWeapon(weapon); // Segunda tirada de daño
+            damageRoll += criticalDamage; // Sumar ambos daños
+            System.out.println("Critical Damage Roll: " + criticalDamage);
         }
 
         System.out.println("Damage Roll: " + damageRoll);
