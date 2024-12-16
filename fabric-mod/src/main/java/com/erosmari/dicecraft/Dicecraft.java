@@ -97,7 +97,11 @@ public class Dicecraft implements ModInitializer {
         System.out.println("Damage Roll: " + damageRoll);
 
         if (attacker.getWorld() instanceof ServerWorld serverWorld) {
-            if (attacker instanceof PlayerEntity player) {
+            if (weapon.isOf(Items.BOW)) {
+                System.out.println("Bow used for attack. Applying damage to target.");
+                target.damage(serverWorld, attacker.getDamageSources().indirectMagic(attacker, attacker), (float) damageRoll);
+                System.out.println("Target hit by arrow. Final Damage Applied: " + damageRoll);
+            } else if (attacker instanceof PlayerEntity player) {
                 target.damage(serverWorld, player.getDamageSources().playerAttack(player), (float) damageRoll);
             } else {
                 target.damage(serverWorld, attacker.getDamageSources().mobAttack(attacker), (float) damageRoll);
