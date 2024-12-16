@@ -123,7 +123,7 @@ public class Dicecraft implements ModInitializer {
         } else if (weapon.isOf(Items.NETHERITE_SWORD)) {
             return rollDice(12);
         } else if (weapon.isOf(Items.BOW)) {
-            return rollDice(10); // El arco hace d10 de daño
+            return rollDice(8); // El arco hace d8 de daño
         } else {
             return rollDice(4); // Default sin armas o no reconocida
         }
