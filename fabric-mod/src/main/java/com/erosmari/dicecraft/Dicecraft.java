@@ -9,6 +9,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -45,19 +46,29 @@ public class Dicecraft implements ModInitializer {
     }
 
     public boolean performAttack(PlayerEntity attacker, LivingEntity target) {
-        int attackRoll = rollD20() + getWeaponBonus(attacker.getStackInHand(Hand.MAIN_HAND)) + DiceConfigHandler.getConfig().playerBonus;
+        int baseRoll = rollD20();
+        int attackRoll = baseRoll;
+
+        if (baseRoll != 1 && baseRoll != 20) {
+            attackRoll += getWeaponBonus(attacker.getStackInHand(Hand.MAIN_HAND)) + DiceConfigHandler.getConfig().playerBonus;
+        }
+
         int targetArmorValue = target.getArmor();
 
-        System.out.println("Attack Roll (with bonus): " + attackRoll);
+        System.out.println("Attack Roll: " + attackRoll);
         System.out.println("Target Armor: " + targetArmorValue);
 
-        if (attackRoll == 1) {
+        if (baseRoll == 1) {
             System.out.println("Natural 1! Attack automatically misses.");
+            spawnAngryParticles(attacker);
             return false; // Falla automática
         }
 
         if (attackRoll >= targetArmorValue) {
-            boolean isCritical = attackRoll == 20;
+            boolean isCritical = baseRoll == 20;
+            if (isCritical) {
+                spawnTotemAnimation(attacker);
+            }
             performDamageRoll(attacker, target, attacker.getStackInHand(Hand.MAIN_HAND), isCritical);
             return true; // Hit successful
         } else {
@@ -67,19 +78,29 @@ public class Dicecraft implements ModInitializer {
     }
 
     public boolean performMobAttack(LivingEntity attacker, PlayerEntity target) {
-        int attackRoll = rollD20() + DiceConfigHandler.getConfig().mobBonus;
+        int baseRoll = rollD20();
+        int attackRoll = baseRoll;
+
+        if (baseRoll != 1 && baseRoll != 20) {
+            attackRoll += DiceConfigHandler.getConfig().mobBonus;
+        }
+
         int targetArmorValue = target.getArmor();
 
-        System.out.println("Mob Attack Roll (with bonus): " + attackRoll);
+        System.out.println("Mob Attack Roll: " + attackRoll);
         System.out.println("Player Armor: " + targetArmorValue);
 
-        if (attackRoll == 1) {
+        if (baseRoll == 1) {
             System.out.println("Natural 1! Mob attack automatically misses.");
+            spawnAngryParticles(attacker);
             return false; // Falla automática
         }
 
         if (attackRoll >= targetArmorValue) {
-            boolean isCritical = attackRoll == 20;
+            boolean isCritical = baseRoll == 20;
+            if (isCritical) {
+                spawnTotemAnimation(target);
+            }
             performDamageRoll(attacker, target, attacker.getMainHandStack(), isCritical);
             return true; // Hit successful
         } else {
@@ -165,6 +186,18 @@ public class Dicecraft implements ModInitializer {
 
     private int rollDice(int sides) {
         return Random.create().nextInt(sides) + 1;
+    }
+
+    private void spawnTotemAnimation(LivingEntity entity) {
+        if (entity.getWorld() instanceof ServerWorld serverWorld) {
+            serverWorld.spawnParticles(ParticleTypes.TOTEM_OF_UNDYING, entity.getX(), entity.getY() + 1, entity.getZ(), 50, 0.5, 1.0, 0.5, 0.1);
+        }
+    }
+
+    private void spawnAngryParticles(LivingEntity entity) {
+        if (entity.getWorld() instanceof ServerWorld serverWorld) {
+            serverWorld.spawnParticles(ParticleTypes.ANGRY_VILLAGER, entity.getX(), entity.getY() + 1, entity.getZ(), 20, 0.5, 1.0, 0.5, 0.1);
+        }
     }
 }
 
