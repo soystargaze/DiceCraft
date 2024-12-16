@@ -97,10 +97,10 @@ public class Dicecraft implements ModInitializer {
         System.out.println("Damage Roll: " + damageRoll);
 
         if (attacker.getWorld() instanceof ServerWorld serverWorld) {
-            if (weapon.isOf(Items.BOW)) {
-                System.out.println("Bow used for attack. Applying damage to target.");
+            if (weapon.isOf(Items.BOW) || weapon.isOf(Items.CROSSBOW)) {
+                System.out.println((weapon.isOf(Items.BOW) ? "Bow" : "Crossbow") + " used for attack. Applying damage to target.");
                 target.damage(serverWorld, attacker.getDamageSources().indirectMagic(attacker, attacker), (float) damageRoll);
-                System.out.println("Target hit by arrow. Final Damage Applied: " + damageRoll);
+                System.out.println("Target hit by " + (weapon.isOf(Items.BOW) ? "arrow" : "bolt") + ". Final Damage Applied: " + damageRoll);
             } else if (attacker instanceof PlayerEntity player) {
                 target.damage(serverWorld, player.getDamageSources().playerAttack(player), (float) damageRoll);
             } else {
@@ -122,8 +122,12 @@ public class Dicecraft implements ModInitializer {
             return rollDice(10);
         } else if (weapon.isOf(Items.NETHERITE_SWORD)) {
             return rollDice(12);
+        } else if (weapon.isOf(Items.TRIDENT)) {
+            return rollDice(10);
         } else if (weapon.isOf(Items.BOW)) {
-            return rollDice(8); // El arco hace d8 de daño
+            return rollDice(6); // El arco hace d6 de daño
+        } else if (weapon.isOf(Items.CROSSBOW)) {
+            return rollDice(8); // La ballesta hace d8 de daño
         } else {
             return rollDice(4); // Default sin armas o no reconocida
         }
