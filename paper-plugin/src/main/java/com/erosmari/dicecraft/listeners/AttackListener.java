@@ -32,35 +32,65 @@ public class AttackListener implements Listener {
     }
 
 
-    public void handleAttack(Player attacker, LivingEntity target, String prefix, int damage) {
+    public void handleAttack(Player attacker, LivingEntity target, String prefix, int baseDamage) {
         FileConfiguration config = ConfigHandler.getConfig();
-        int baseRoll = rollD20();
+        int attackRoll = rollD20();
+        int targetArmor = getArmorValue(target);
 
-        // Si el atacante es un jugador y el daño no se pasó como argumento, calcula el daño del arma
-        if (prefix.equals("player")) {
-            damage = getWeaponDamage(attacker.getInventory().getItemInMainHand(), config);
-        }
+        attacker.sendMessage("§eTirada de ataque: " + attackRoll + " vs Armadura: " + targetArmor);
 
-        if (baseRoll == 1) { // Fallo crítico
+        if (attackRoll == 1) { // Fallo crítico (1 Natural)
             attacker.sendMessage("§c¡Fallo crítico! (Natural 1)");
             playEffect(attacker, config, prefix + "MissParticles", prefix + "MissSound");
-            target.damage(0);
-        } else if (baseRoll == 20) { // Golpe crítico
-            attacker.sendMessage("§a¡Golpe crítico! (Natural 20)");
+            return; // Salimos sin aplicar daño
+        }
+
+        if (attackRoll == 20) { // Golpe crítico (20 Natural)
+            int damageRoll1 = rollDice(baseDamage);
+            int damageRoll2 = rollDice(baseDamage);
+            int totalDamage = damageRoll1 + damageRoll2;
+
+            attacker.sendMessage("§a¡Golpe crítico! (Natural 20) Daño total: " + totalDamage);
             playEffect(attacker, config, prefix + "CriticalHitParticles", prefix + "CriticalHitSound");
-            target.damage(damage * 2);
-        } else {
-            attacker.sendMessage("§e¡Golpe exitoso! Tirada: " + baseRoll + ", Daño: " + damage);
-            target.damage(damage);
+
+            target.setNoDamageTicks(0);
+            target.setHealth(Math.max(0, target.getHealth() - totalDamage));
+            return; // Terminamos aquí ya que el golpe es automático
+        }
+
+        if (attackRoll >= targetArmor) { // Ataque exitoso normal
+            int damageRoll = rollDice(baseDamage);
+            attacker.sendMessage("§a¡Ataque exitoso! Daño infligido: " + damageRoll);
+
+            target.setNoDamageTicks(0);
+            target.setHealth(Math.max(0, target.getHealth() - damageRoll));
+        } else { // Fallo normal
+            attacker.sendMessage("§c¡Ataque fallido! No superaste la armadura del objetivo.");
+            playEffect(attacker, config, prefix + "MissParticles", prefix + "MissSound");
         }
     }
 
 
+
+    private int getArmorValue(LivingEntity entity) {
+        if (entity != null) {
+            var attribute = entity.getAttribute(org.bukkit.attribute.Attribute.ARMOR);
+            if (attribute != null) { // Verificar si el atributo existe
+                return (int) attribute.getValue(); // Devolver el valor del atributo
+            }
+        }
+        return 0; // Si no existe el atributo, devolver 0
+    }
 
 
     private int rollD20() {
         return random.nextInt(20) + 1;
     }
+
+    private int rollDice(int sides) {
+        return random.nextInt(sides) + 1;
+    }
+
 
     private int getWeaponDamage(ItemStack weapon, FileConfiguration config) {
         return switch (weapon.getType().toString()) {

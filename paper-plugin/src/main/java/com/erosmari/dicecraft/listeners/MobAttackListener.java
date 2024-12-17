@@ -3,6 +3,7 @@ package com.erosmari.dicecraft.listeners;
 import com.erosmari.dicecraft.config.ConfigHandler;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+//import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -15,24 +16,75 @@ import java.util.Random;
 public class MobAttackListener implements Listener {
 
     private final Random random = new Random();
-    private final AttackListener attackListener = new AttackListener();
 
     @EventHandler
     public void onMobAttack(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof LivingEntity mob)) return; // El atacante debe ser un mob
-        if (!(event.getEntity() instanceof Player player)) return; // El objetivo debe ser un jugador
+        if (!(event.getDamager() instanceof LivingEntity mob)) return;
+        if (!(event.getEntity() instanceof Player player)) return;
 
-        // Obtener daño del mob y manejar ataques especiales
         FileConfiguration config = ConfigHandler.getConfig();
-        int mobDamage = getMobDamage(mob, config);
+        int attackRoll = rollD20();
+        int playerArmor = getArmorValue(player);
 
-        if (mob instanceof Warden && random.nextDouble() < 0.5) { // 50% de probabilidad de Sonic Boom
-            handleSonicBoom(player, config.getInt("wardenSonicBoomDamage", 15));
-            return; // Finaliza aquí para evitar el daño normal del Warden
+        player.sendMessage("§cTirada de ataque del mob: " + attackRoll + " vs Armadura: " + playerArmor);
+
+        if (mob instanceof Warden) {
+            double sonicBoomChance = config.getDouble("warden.sonicBoomChance", 0.5);
+            if (random.nextDouble() < sonicBoomChance) {
+                handleSonicBoom(player, config.getInt("wardenSonicBoomDamage", 15));
+                return; // Termina aquí para evitar el daño normal
+            }
         }
 
-        // Reutilizar lógica centralizada de ataques
-        attackListener.handleAttack(player, mob, "mob", mobDamage);
+        if (attackRoll == 1) { // Fallo crítico
+            player.sendMessage("§a¡El ataque del mob ha fallado! (Natural 1)");
+            event.setDamage(0);
+        } else if (attackRoll >= playerArmor) { // Ataque exitoso
+            int baseDamage = getMobDamage(mob, config);
+            int damageRoll = rollDice(baseDamage);
+            player.sendMessage("§c¡El mob te golpeó con " + damageRoll + " puntos de daño!");
+            event.setDamage(damageRoll);
+        } else { // Fallo normal
+            player.sendMessage("§a¡El mob falló su ataque!");
+            event.setDamage(0);
+        }
+    }
+
+    private void handleSonicBoom(Player player, int damage) {
+        player.sendMessage("§b¡El Warden lanza su Sonic Boom!");
+
+        // Reproducir efectos
+        player.getWorld().spawnParticle(Particle.SONIC_BOOM, player.getLocation(), 1);
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WARDEN_SONIC_BOOM, 1.0f, 1.0f);
+
+        // Aplicar daño y retroceso
+        player.damage(damage);
+        Vector knockback = player.getLocation().getDirection().multiply(-3).setY(1);
+        player.setVelocity(knockback);
+    }
+
+    private int getArmorValue(LivingEntity entity) {
+        if (entity != null) {
+            var attribute = entity.getAttribute(org.bukkit.attribute.Attribute.ARMOR);
+            if (attribute != null) {
+                double value = attribute.getValue();
+                if (!Double.isNaN(value)) {
+                    return (int) value; // Devolvemos el valor si no es NaN
+                }
+            }
+        }
+        return 0; // Si no tiene el atributo o su valor no es válido, asumimos 0
+    }
+
+
+
+
+    private int rollD20() {
+        return random.nextInt(20) + 1;
+    }
+
+    private int rollDice(int sides) {
+        return random.nextInt(sides) + 1;
     }
 
     private int getMobDamage(LivingEntity mob, FileConfiguration config) {
@@ -70,18 +122,5 @@ public class MobAttackListener implements Listener {
         if (mob instanceof Endermite) return config.getInt("endermiteDamage", 2);
         if (mob instanceof Silverfish) return config.getInt("silverfishDamage", 2);
         return config.getInt("defaultMobDamage", 2); // Daño por defecto
-    }
-
-    private void handleSonicBoom(Player player, int damage) {
-        player.sendMessage("§b¡El Warden lanza su Sonic Boom!");
-
-        // Partículas y sonido del Sonic Boom
-        player.getWorld().spawnParticle(Particle.SONIC_BOOM, player.getLocation(), 1);
-        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WARDEN_SONIC_BOOM, 1.0f, 1.0f);
-
-        // Aplicar daño y empuje al jugador
-        player.damage(damage);
-        Vector knockback = player.getLocation().getDirection().multiply(-3).setY(1);
-        player.setVelocity(knockback);
     }
 }
