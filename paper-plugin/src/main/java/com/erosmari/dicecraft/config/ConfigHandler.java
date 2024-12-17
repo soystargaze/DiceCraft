@@ -5,14 +5,12 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
 
 public class ConfigHandler {
-    private static File configFile;
-    private static FileConfiguration config;
+    private static FileConfiguration config; // Campo global necesario
 
     public static void setup(JavaPlugin plugin) {
-        configFile = new File(plugin.getDataFolder(), "config.yml");
+        File configFile = new File(plugin.getDataFolder(), "config.yml"); // Variable local
 
         if (!configFile.exists()) {
             plugin.saveResource("config.yml", false);
@@ -23,13 +21,5 @@ public class ConfigHandler {
 
     public static FileConfiguration getConfig() {
         return config;
-    }
-
-    public static void saveConfig() {
-        try {
-            config.save(configFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
