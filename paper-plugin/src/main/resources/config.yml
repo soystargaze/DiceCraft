@@ -1,8 +1,66 @@
-playerBonus: 2
-mobBonus: 1
+# Configuración general
+playerBonus: 0
+mobBonus: 0
+
+# Bonificaciones de armas
 woodenSwordBonus: 0
 stoneSwordBonus: 1
 ironSwordBonus: 2
 diamondSwordBonus: 3
 netheriteSwordBonus: 4
 bowBonus: 2
+tridentBonus: 3
+
+# Daño de mobs hostiles
+zombieDamage: 4
+skeletonDamage: 6
+creeperDamage: 20
+spiderDamage: 4
+caveSpiderDamage: 4
+endermanDamage: 6
+blazeDamage: 4
+wardenMeleeDamage: 30
+wardenSonicBoomDamage: 15
+guardianDamage: 4
+elderGuardianDamage: 8
+phantomDamage: 4
+magmaCubeDamage: 4
+slimeDamage: 4
+ghastDamage: 10
+witchDamage: 6
+witherSkeletonDamage: 8
+piglinDamage: 6
+piglinBruteDamage: 12
+zoglinDamage: 8
+hoglinDamage: 8
+drownedDamage: 6
+shulkerDamage: 4
+evokerDamage: 8
+vindicatorDamage: 12
+pillagerDamage: 6
+illusionerDamage: 6
+ravagerDamage: 20
+silverfishDamage: 2
+strayDamage: 6
+huskDamage: 6
+vexDamage: 6
+zombifiedPiglinDamage: 6
+endermiteDamage: 2
+witherDamage: 20
+
+# Bonificación por tipo de arma para el jugador
+woodenSwordDamage: 4
+stoneSwordDamage: 6
+ironSwordDamage: 8
+diamondSwordDamage: 10
+netheriteSwordDamage: 12
+bowDamage: 6
+crossbowDamage: 8
+tridentDamage: 10
+
+# Efectos adicionales
+effects:
+  criticalHitParticles: TOTEM_OF_UNDYING
+  criticalHitSound: ENTITY_PLAYER_LEVELUP
+  missParticles: ANGRY_VILLAGER
+  missSound: ENTITY_VILLAGER_NO
