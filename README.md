@@ -1,6 +1,6 @@
 # DiceCraft
 
-**DiceCraft** es un proyecto modular para Minecraft que introduce mecánicas de combate inspiradas en sistemas de rol clásicos, como *Dungeons & Dragons*. Combina un mod desarrollado con **Fabric** y un plugin diseñado para servidores **Paper**, ofreciendo una experiencia única para jugadores y administradores.
+**DiceCraft** es un proyecto modular para Minecraft que introduce mecánicas de combate inspiradas en sistemas de rol clásicos, como *Dungeons & Dragons*.
 
 ---
 
@@ -43,6 +43,8 @@ El daño, los dados y los bonificadores son configurables.
     - El daño infligido basado en la tirada de dados correspondiente.
 Todo es configurable
 
+### **Mobs**
+- Dados de daño para cada tipo de mob (Configurable) si tiene éxito una tirada de ataque
 
 ### **Administradores**
 - Ajusta las reglas de combate utilizando las configuraciones avanzadas (en desarrollo).
