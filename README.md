@@ -10,12 +10,16 @@
 - **Tiradas de dados para ataques**: Los jugadores realizan tiradas de *d20* al atacar, determinando el éxito del ataque según la armadura del objetivo.
 - **Bonificaciones por armas**: Cada arma tiene un bonificador que influye en las tiradas de ataque y daño.
 - **Daño personalizado**: El daño infligido se calcula con tiradas de dados específicos para cada tipo de arma (por ejemplo, `d4` para ataques básicos, `d12` para armas avanzadas).
-- **Soporte para mobs**: Los mobs también realizan tiradas de ataque contra los jugadores, añadiendo un nivel de aleatoriedad al combate.
+- **Soporte para mobs**:
+    - Los mobs también realizan tiradas de ataque contra los jugadores, añadiendo un nivel de aleatoriedad al combate.
+    - **Dados de daño específicos**: Cada tipo de mob tiene dados de daño configurables que determinan el daño que infligen (por ejemplo, `d6` para zombis, `d8` para esqueletos).
+    - **Configuración avanzada**: Los valores de daño para cada mob pueden ajustarse en los archivos de configuración.
+El daño, los dados y los bonificadores son configurables.
 
-### **Paper Plugin**
+
+### **Paper Plugin *(en desarrollo)***
 - **Compatibilidad con servidores Paper**: Extiende las mecánicas del mod para servidores multijugador.
 - **Configuración avanzada** *(en desarrollo)*:
-    - Personalización de valores de armadura.
     - Ajustes en el daño según el tipo de mob.
     - Efectos especiales basados en los resultados de las tiradas.
 
@@ -28,16 +32,6 @@
 - [Fabric Loader](https://fabricmc.net/use) y [Fabric API](https://modrinth.com/mod/fabric-api) para el mod.
 - Un servidor Paper para el plugin.
 
-### **Instalación del Mod (Fabric)**
-1. Descarga el archivo `.jar` desde `fabric-mod/build/libs/`.
-2. Coloca el archivo `.jar` en la carpeta `mods/` de tu cliente o servidor Fabric.
-3. Asegúrate de que Fabric API esté instalado.
-
-### **Instalación del Plugin (Paper)**
-1. Descarga el archivo `.jar` desde `paper-plugin/build/libs/`.
-2. Coloca el archivo `.jar` en la carpeta `plugins/` de tu servidor Paper.
-3. Reinicia el servidor para activar el plugin.
-
 ---
 
 ## Uso
@@ -47,10 +41,12 @@
     - La tirada de ataque (*d20*).
     - Bonificaciones según el arma utilizada.
     - El daño infligido basado en la tirada de dados correspondiente.
+Todo es configurable
+
 
 ### **Administradores**
 - Ajusta las reglas de combate utilizando las configuraciones avanzadas (en desarrollo).
-- Implementa personalizaciones desde un archivo de configuración en el servidor.
+- Configura los dados de daño para mobs en el archivo de configuración del mod.
 
 ---
 
@@ -70,7 +66,11 @@
 
 2. **Mob ataca a un jugador**:
     - El mob realiza una tirada de ataque con un *d20* (sin bonificadores).
-    - Si la tirada supera la armadura del jugador, el ataque tiene éxito, y el mod calcula el daño.
+    - Si la tirada supera la armadura del jugador, el ataque tiene éxito.
+    - El daño se determina con un dado específico configurado para el mob:
+      ```
+      Daño infligido por zombi: 1d6 → Resultado: 4.
+      ```
 
 ---
 
