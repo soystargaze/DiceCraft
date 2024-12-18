@@ -14,22 +14,22 @@ effects:
 
 # Configuración de armas
 weapons:
-  woodenSword:
+  woodensword:
     damageDice: 4  # d4
     bonus: 0
-  goldenSword:
+  goldensword:
     damageDice: 4  # d4
     bonus: 1
-  stoneSword:
+  stonesword:
     damageDice: 6  # d6
     bonus: 1
-  ironSword:
+  ironsword:
     damageDice: 8  # d8
     bonus: 2
-  diamondSword:
+  diamondsword:
     damageDice: 10 # d10
     bonus: 3
-  netheriteSword:
+  netheritesword:
     damageDice: 12 # d12
     bonus: 4
   bow:

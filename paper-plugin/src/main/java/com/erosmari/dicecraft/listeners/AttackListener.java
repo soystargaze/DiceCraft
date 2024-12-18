@@ -70,7 +70,7 @@ public class AttackListener implements Listener {
     }
 
     private int getWeaponDamage(ItemStack weapon, FileConfiguration config) {
-        String weaponKey = weapon.getType().toString().toLowerCase(); // Convierte el tipo del arma a string
+        String weaponKey = weapon.getType().toString().toLowerCase().replace("_", ""); // Convierte a minúsculas y elimina guiones bajos
         String baseKey = "weapons." + weaponKey;
 
         // Obtenemos el dado de daño y el bonificador desde config.yml
@@ -86,7 +86,7 @@ public class AttackListener implements Listener {
     }
 
     private int getWeaponBonus(ItemStack weapon, FileConfiguration config) {
-        String weaponKey = weapon.getType().toString().toLowerCase();
+        String weaponKey = weapon.getType().toString().toLowerCase().replace("_", ""); // Convierte a minúsculas y elimina guiones bajos
         return config.getInt("weapons." + weaponKey + ".bonus", config.getInt("weapons.default.bonus", 0));
     }
 
