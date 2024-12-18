@@ -1,15 +1,15 @@
 package com.erosmari.dicecraft.listeners;
 
 import com.erosmari.dicecraft.config.ConfigHandler;
+import com.erosmari.dicecraft.utils.EffectUtils;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-//import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.util.Vector;
 
 import java.util.Random;
 
@@ -19,108 +19,115 @@ public class MobAttackListener implements Listener {
 
     @EventHandler
     public void onMobAttack(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof LivingEntity mob)) return;
-        if (!(event.getEntity() instanceof Player player)) return;
+        if (!(event.getDamager() instanceof LivingEntity mob)) return; // Solo mobs
+        if (!(event.getEntity() instanceof Player player)) return; // Solo jugadores como objetivo
 
         FileConfiguration config = ConfigHandler.getConfig();
         int attackRoll = rollD20();
         int playerArmor = getArmorValue(player);
 
-        player.sendMessage("§cTirada de ataque del mob: " + attackRoll + " vs Armadura: " + playerArmor);
+        if (attackRoll == 1) { // Fallo crítico (1 Natural)
+            player.sendMessage("§a¡El mob falló su ataque! (Natural 1)");
+            EffectUtils.playEffect(mob, config, false, "Miss");
+            event.setCancelled(true); // Cancela el daño
+            return;
+        }
 
-        if (mob instanceof Warden) {
+        if (mob instanceof org.bukkit.entity.Warden) { // Caso especial: Warden
             double sonicBoomChance = config.getDouble("warden.sonicBoomChance", 0.5);
             if (random.nextDouble() < sonicBoomChance) {
                 handleSonicBoom(player, config.getInt("wardenSonicBoomDamage", 15));
-                return; // Termina aquí para evitar el daño normal
+                event.setCancelled(true); // Cancela el ataque físico si se lanza Sonic Boom
+                return;
             }
         }
 
-        if (attackRoll == 1) { // Fallo crítico
-            player.sendMessage("§a¡El ataque del mob ha fallado! (Natural 1)");
-            event.setDamage(0);
-        } else if (attackRoll >= playerArmor) { // Ataque exitoso
-            int baseDamage = getMobDamage(mob, config);
-            int damageRoll = rollDice(baseDamage);
-            player.sendMessage("§c¡El mob te golpeó con " + damageRoll + " puntos de daño!");
-            event.setDamage(damageRoll);
+        if (attackRoll == 20) { // Golpe crítico (20 Natural)
+            handleCriticalHit(mob, player, config, event);
+            return;
+        }
+
+        if (attackRoll >= playerArmor) { // Ataque exitoso normal
+            handleNormalHit(mob, player, config, event);
         } else { // Fallo normal
             player.sendMessage("§a¡El mob falló su ataque!");
-            event.setDamage(0);
+            EffectUtils.playEffect(mob, config, false, "Miss");
+            event.setCancelled(true); // Cancela el daño
         }
+    }
+
+    private void handleCriticalHit(LivingEntity mob, Player player, FileConfiguration config, EntityDamageByEntityEvent event) {
+        int damageRoll1 = getMobDamage(mob, config);
+        int damageRoll2 = getMobDamage(mob, config);
+        int totalDamage = damageRoll1 + damageRoll2;
+
+        player.sendMessage("§c¡El mob te golpeó con un crítico! Daño total: " + totalDamage);
+        EffectUtils.playEffect(mob, config, false, "CriticalHit");
+
+        event.setDamage(totalDamage); // Aplicamos el daño crítico
+    }
+
+    private void handleNormalHit(LivingEntity mob, Player player, FileConfiguration config, EntityDamageByEntityEvent event) {
+        int damageRoll = getMobDamage(mob, config);
+        player.sendMessage("§c¡El mob te golpeó! Daño infligido: " + damageRoll);
+
+        event.setDamage(damageRoll); // Aplicamos el daño normal
     }
 
     private void handleSonicBoom(Player player, int damage) {
-        player.sendMessage("§b¡El Warden lanza su Sonic Boom!");
-
-        // Reproducir efectos
+        player.sendMessage("§b¡El Warden lanza su Sonic Boom e inflige " + damage + " de daño!");
         player.getWorld().spawnParticle(Particle.SONIC_BOOM, player.getLocation(), 1);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WARDEN_SONIC_BOOM, 1.0f, 1.0f);
 
-        // Aplicar daño y retroceso
+        // Daño y retroceso
         player.damage(damage);
-        Vector knockback = player.getLocation().getDirection().multiply(-3).setY(1);
-        player.setVelocity(knockback);
+        player.setVelocity(player.getLocation().getDirection().multiply(-3).setY(1));
     }
-
-    private int getArmorValue(LivingEntity entity) {
-        if (entity != null) {
-            var attribute = entity.getAttribute(org.bukkit.attribute.Attribute.ARMOR);
-            if (attribute != null) {
-                double value = attribute.getValue();
-                if (!Double.isNaN(value)) {
-                    return (int) value; // Devolvemos el valor si no es NaN
-                }
-            }
-        }
-        return 0; // Si no tiene el atributo o su valor no es válido, asumimos 0
-    }
-
-
-
 
     private int rollD20() {
         return random.nextInt(20) + 1;
     }
 
-    private int rollDice(int sides) {
-        return random.nextInt(sides) + 1;
+    private int getMobDamage(LivingEntity mob, FileConfiguration config) {
+        if (mob instanceof org.bukkit.entity.Zombie) return rollDice(config.getInt("zombieDamageDice", 4));
+        if (mob instanceof org.bukkit.entity.Skeleton) return rollDice(config.getInt("skeletonDamageDice", 6));
+        if (mob instanceof org.bukkit.entity.Creeper) return rollDice(config.getInt("creeperDamageDice", 20));
+        if (mob instanceof org.bukkit.entity.Warden) return rollDice(config.getInt("wardenMeleeDamageDice", 30));
+        if (mob instanceof org.bukkit.entity.Spider) return rollDice(config.getInt("spiderDamageDice", 4));
+        if (mob instanceof org.bukkit.entity.CaveSpider) return rollDice(config.getInt("caveSpiderDamageDice", 4));
+        if (mob instanceof org.bukkit.entity.Enderman) return rollDice(config.getInt("endermanDamageDice", 6));
+        if (mob instanceof org.bukkit.entity.Blaze) return rollDice(config.getInt("blazeDamageDice", 8));
+        if (mob instanceof org.bukkit.entity.Silverfish) return rollDice(config.getInt("silverfishDamageDice", 2));
+        if (mob instanceof org.bukkit.entity.Phantom) return rollDice(config.getInt("phantomDamageDice", 6));
+        if (mob instanceof org.bukkit.entity.Piglin) return rollDice(config.getInt("piglinDamageDice", 6));
+        if (mob instanceof org.bukkit.entity.PiglinBrute) return rollDice(config.getInt("piglinBruteDamageDice", 12));
+        if (mob instanceof org.bukkit.entity.Hoglin) return rollDice(config.getInt("hoglinDamageDice", 8));
+        if (mob instanceof org.bukkit.entity.Zoglin) return rollDice(config.getInt("zoglinDamageDice", 10));
+        if (mob instanceof org.bukkit.entity.WitherSkeleton) return rollDice(config.getInt("witherSkeletonDamageDice", 8));
+        if (mob instanceof org.bukkit.entity.Evoker) return rollDice(config.getInt("evokerDamageDice", 8));
+        if (mob instanceof org.bukkit.entity.Vindicator) return rollDice(config.getInt("vindicatorDamageDice", 8));
+        if (mob instanceof org.bukkit.entity.Ravager) return rollDice(config.getInt("ravagerDamageDice", 20));
+        if (mob instanceof org.bukkit.entity.Ghast) return rollDice(config.getInt("ghastDamageDice", 10));
+        if (mob instanceof org.bukkit.entity.Shulker) return rollDice(config.getInt("shulkerDamageDice", 4));
+        if (mob instanceof org.bukkit.entity.Slime slime) {
+            if (slime.getSize() == 1) return rollDice(config.getInt("slimeSmallDamageDice", 2));
+            if (slime.getSize() == 2) return rollDice(config.getInt("slimeMediumDamageDice", 4));
+            return rollDice(config.getInt("slimeLargeDamageDice", 6));
+        }
+        if (mob instanceof org.bukkit.entity.MagmaCube magma) {
+            if (magma.getSize() == 1) return rollDice(config.getInt("magmaCubeSmallDamageDice", 2));
+            if (magma.getSize() == 2) return rollDice(config.getInt("magmaCubeMediumDamageDice", 4));
+            return rollDice(config.getInt("magmaCubeLargeDamageDice", 6));
+        }
+        return rollDice(config.getInt("defaultMobDamageDice", 2)); // Daño predeterminado
     }
 
-    private int getMobDamage(LivingEntity mob, FileConfiguration config) {
-        // Configuración del daño para cada tipo de mob hostil
-        if (mob instanceof Zombie) return config.getInt("zombieDamage", 4);
-        if (mob instanceof Skeleton) return config.getInt("skeletonDamage", 6);
-        if (mob instanceof Creeper) return config.getInt("creeperDamage", 20);
-        if (mob instanceof Enderman) return config.getInt("endermanDamage", 6);
-        if (mob instanceof Spider) return config.getInt("spiderDamage", 4);
-        if (mob instanceof CaveSpider) return config.getInt("caveSpiderDamage", 4);
-        if (mob instanceof Blaze) return config.getInt("blazeDamage", 4);
-        if (mob instanceof Witch) return config.getInt("witchDamage", 6);
-        if (mob instanceof Warden) return config.getInt("wardenMeleeDamage", 30);
-        if (mob instanceof Ghast) return config.getInt("ghastDamage", 10);
-        if (mob instanceof Piglin) return config.getInt("piglinDamage", 6);
-        if (mob instanceof PigZombie) return config.getInt("piglinDamage", 6);
-        if (mob instanceof PiglinBrute) return config.getInt("piglinBruteDamage", 12);
-        if (mob instanceof Hoglin) return config.getInt("hoglinDamage", 8);
-        if (mob instanceof Zoglin) return config.getInt("zoglinDamage", 8);
-        if (mob instanceof Vindicator) return config.getInt("vindicatorDamage", 12);
-        if (mob instanceof Evoker) return config.getInt("evokerDamage", 8);
-        if (mob instanceof Pillager) return config.getInt("pillagerDamage", 6);
-        if (mob instanceof Ravager) return config.getInt("ravagerDamage", 20);
-        if (mob instanceof Shulker) return config.getInt("shulkerDamage", 4);
-        if (mob instanceof MagmaCube) return config.getInt("magmaCubeDamage", 4);
-        if (mob instanceof Slime) return config.getInt("slimeDamage", 4);
-        if (mob instanceof WitherSkeleton) return config.getInt("witherSkeletonDamage", 8);
-        if (mob instanceof Phantom) return config.getInt("phantomDamage", 4);
-        if (mob instanceof Guardian) return config.getInt("guardianDamage", 4);
-        if (mob instanceof ElderGuardian) return config.getInt("elderGuardianDamage", 8);
-        if (mob instanceof Drowned) return config.getInt("drownedDamage", 6);
-        if (mob instanceof Stray) return config.getInt("strayDamage", 6);
-        if (mob instanceof Husk) return config.getInt("huskDamage", 6);
-        if (mob instanceof Vex) return config.getInt("vexDamage", 6);
-        if (mob instanceof Endermite) return config.getInt("endermiteDamage", 2);
-        if (mob instanceof Silverfish) return config.getInt("silverfishDamage", 2);
-        return config.getInt("defaultMobDamage", 2); // Daño por defecto
+    private int getArmorValue(LivingEntity entity) {
+        var attribute = entity.getAttribute(Attribute.ARMOR);
+        return attribute != null ? (int) attribute.getValue() : 0;
+    }
+
+    private int rollDice(int sides) {
+        return random.nextInt(sides) + 1;
     }
 }
