@@ -12,6 +12,39 @@ effects:
   mobMissParticles: angry_villager
   mobMissSound: entity.villager.no
 
+# Configuración de armas
+weapons:
+  woodenSword:
+    damageDice: 4  # d4
+    bonus: 0
+  goldenSword:
+    damageDice: 4  # d4
+    bonus: 1
+  stoneSword:
+    damageDice: 6  # d6
+    bonus: 1
+  ironSword:
+    damageDice: 8  # d8
+    bonus: 2
+  diamondSword:
+    damageDice: 10 # d10
+    bonus: 3
+  netheriteSword:
+    damageDice: 12 # d12
+    bonus: 4
+  bow:
+    damageDice: 6  # d6
+    bonus: 2
+  crossbow:
+    damageDice: 8  # d8
+    bonus: 3
+  trident:
+    damageDice: 10 # d10
+    bonus: 3
+  default:
+    damageDice: 2  # d2
+    bonus: 0
+
 # Configuración de daño de mobs
 mobs:
   zombieDamageDice: 4

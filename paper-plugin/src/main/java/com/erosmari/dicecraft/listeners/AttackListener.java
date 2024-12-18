@@ -23,21 +23,27 @@ public class AttackListener implements Listener {
         if (!(event.getEntity() instanceof LivingEntity target)) return; // Solo entidades vivas
 
         FileConfiguration config = ConfigHandler.getConfig();
-        int attackRoll = rollD20();
+
+        // Obtenemos el bonificador del arma
+        ItemStack weapon = attacker.getInventory().getItemInMainHand();
+        int attackBonus = getWeaponBonus(weapon, config);
+
+        // Tirada de ataque
+        int attackRoll = rollD20() + attackBonus;
         int targetArmor = getArmorValue(target);
 
         attacker.sendMessage("§eTirada de ataque: " + attackRoll + " vs Armadura: " + targetArmor);
 
-        if (attackRoll == 1) { // Fallo crítico (1 Natural)
+        if (attackRoll == 1 + attackBonus) { // Fallo crítico (1 Natural)
             attacker.sendMessage("§c¡Fallo crítico! (Natural 1)");
             EffectUtils.playEffect(attacker, config, true, "Miss");
             event.setCancelled(true); // Cancela completamente el daño
             return;
         }
 
-        if (attackRoll == 20) { // Golpe crítico (20 Natural)
-            int damageRoll1 = getWeaponDamage(attacker.getInventory().getItemInMainHand());
-            int damageRoll2 = getWeaponDamage(attacker.getInventory().getItemInMainHand());
+        if (attackRoll >= 20 + attackBonus) { // Golpe crítico (20 Natural)
+            int damageRoll1 = getWeaponDamage(weapon, config);
+            int damageRoll2 = getWeaponDamage(weapon, config);
             int totalDamage = damageRoll1 + damageRoll2;
 
             attacker.sendMessage("§a¡Golpe crítico! (Natural 20) Daño total: " + totalDamage);
@@ -48,7 +54,7 @@ public class AttackListener implements Listener {
         }
 
         if (attackRoll >= targetArmor) { // Ataque exitoso normal
-            int damageRoll = getWeaponDamage(attacker.getInventory().getItemInMainHand());
+            int damageRoll = getWeaponDamage(weapon, config);
             attacker.sendMessage("§a¡Ataque exitoso! Daño infligido: " + damageRoll);
 
             event.setDamage(damageRoll); // Aplicamos el daño normal
@@ -63,19 +69,25 @@ public class AttackListener implements Listener {
         return random.nextInt(20) + 1;
     }
 
-    private int getWeaponDamage(ItemStack weapon) {
-        // Determinamos el dado basado en el arma equipada
-        return switch (weapon.getType()) {
-            case WOODEN_SWORD, GOLDEN_SWORD -> rollDice(4); // d4
-            case STONE_SWORD -> rollDice(6); // d6
-            case IRON_SWORD -> rollDice(8); // d8
-            case DIAMOND_SWORD -> rollDice(10); // d10
-            case NETHERITE_SWORD -> rollDice(12); // d12
-            case BOW -> rollDice(6); // d6 para arco
-            case CROSSBOW -> rollDice(8); // d8 para ballesta
-            case TRIDENT -> rollDice(10); // d10 para tridente
-            default -> rollDice(2); // Valor por defecto (d2) para armas no reconocidas o manos vacías
-        };
+    private int getWeaponDamage(ItemStack weapon, FileConfiguration config) {
+        String weaponKey = weapon.getType().toString().toLowerCase(); // Convierte el tipo del arma a string
+        String baseKey = "weapons." + weaponKey;
+
+        // Obtenemos el dado de daño y el bonificador desde config.yml
+        int damageDice = config.getInt(baseKey + ".damageDice", config.getInt("weapons.default.damageDice", 2));
+        int bonus = config.getInt(baseKey + ".bonus", config.getInt("weapons.default.bonus", 0));
+
+        int damageRoll = rollDice(damageDice) + bonus;
+
+        // Mensaje para depuración (puedes eliminarlo si no es necesario)
+        System.out.println("Arma: " + weaponKey + ", Dado de daño: d" + damageDice + ", Bonificador: " + bonus + ", Daño Total: " + damageRoll);
+
+        return damageRoll;
+    }
+
+    private int getWeaponBonus(ItemStack weapon, FileConfiguration config) {
+        String weaponKey = weapon.getType().toString().toLowerCase();
+        return config.getInt("weapons." + weaponKey + ".bonus", config.getInt("weapons.default.bonus", 0));
     }
 
     private int getArmorValue(LivingEntity entity) {
