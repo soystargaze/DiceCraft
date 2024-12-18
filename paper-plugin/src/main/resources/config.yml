@@ -1,67 +1,46 @@
-# Configuración general
-playerBonus: 2
-mobBonus: 1
-
-# Daños de armas para jugadores
-woodenSwordDamage: 4
-stoneSwordDamage: 6
-ironSwordDamage: 8
-diamondSwordDamage: 10
-netheriteSwordDamage: 12
-bowDamage: 6
-crossbowDamage: 8
-tridentDamage: 10
-defaultDamage: 2
-
-# Daños de mobs hostiles
-zombieDamage: 4
-skeletonDamage: 6
-creeperDamage: 20
-endermanDamage: 6
-spiderDamage: 4
-caveSpiderDamage: 4
-blazeDamage: 4
-witchDamage: 6
-wardenMeleeDamage: 30
-wardenSonicBoomDamage: 15
-ghastDamage: 10
-piglinDamage: 6
-piglinBruteDamage: 12
-hoglinDamage: 8
-zoglinDamage: 8
-vindicatorDamage: 12
-evokerDamage: 8
-pillagerDamage: 6
-ravagerDamage: 20
-shulkerDamage: 4
-magmaCubeDamage: 4
-slimeDamage: 4
-witherSkeletonDamage: 8
-phantomDamage: 4
-guardianDamage: 4
-elderGuardianDamage: 8
-drownedDamage: 6
-strayDamage: 6
-huskDamage: 6
-vexDamage: 6
-endermiteDamage: 2
-silverfishDamage: 2
-defaultMobDamage: 2
-
-# Efectos adicionales para jugadores
+# Configuración de efectos
 effects:
+  # Jugadores
   playerCriticalHitParticles: totem_of_undying
   playerCriticalHitSound: entity.player.levelup
   playerMissParticles: angry_villager
   playerMissSound: entity.villager.no
 
-  # Efectos adicionales para mobs
-  mobCriticalHitParticles: totem_of_undying
+  # Mobs
+  mobCriticalHitParticles: smoke
   mobCriticalHitSound: entity.wither.spawn
   mobMissParticles: angry_villager
   mobMissSound: entity.villager.no
 
-# Configuración especial del Warden
-warden:
-  sonicBoomDamage: 15
-  sonicBoomChance: 0.5 # Probabilidad del 50% de lanzar Sonic Boom
+# Configuración de daño de mobs
+mobs:
+  zombieDamageDice: 4
+  skeletonDamageDice: 6
+  creeperDamageDice: 20
+  wardenMeleeDamageDice: 30
+  warden:
+    sonicBoomChance: 0.5
+  wardenSonicBoomDamage: 15
+  spiderDamageDice: 4
+  caveSpiderDamageDice: 4
+  endermanDamageDice: 6
+  blazeDamageDice: 8
+  silverfishDamageDice: 2
+  phantomDamageDice: 6
+  piglinDamageDice: 6
+  piglinBruteDamageDice: 12
+  hoglinDamageDice: 8
+  zoglinDamageDice: 10
+  witherSkeletonDamageDice: 8
+  evokerDamageDice: 8
+  vindicatorDamageDice: 8
+  ravagerDamageDice: 20
+  ghastDamageDice: 10
+  shulkerDamageDice: 4
+  slimeSmallDamageDice: 2
+  slimeMediumDamageDice: 4
+  slimeLargeDamageDice: 6
+  magmaCubeSmallDamageDice: 2
+  magmaCubeMediumDamageDice: 4
+  magmaCubeLargeDamageDice: 6
+  defaultMobDamageDice: 2
